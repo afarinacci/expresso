@@ -21,6 +21,18 @@ menuItemsRouter.param('menuItemId', (req, res, next, menuItemId) => {
 
 // GET / Returns a 200 response containing all saved menu items related to the menu with the supplied menu ID on the menuItems property of the response body
 // If a menu with the supplied menu ID doesn’t exist, returns a 404 response
+menuItemsRouter.get('/', (req, res, next) => {
+  db.all(
+    `SELECT * FROM MenuItem WHERE MenuItem.menu_id=${req.params.menuId}`,
+    (err, menuItems) => {
+      if (err) {
+        next(err);
+      } else {
+        res.status(200).json({ menuItems: menuItems });
+      }
+    }
+  );
+});
 
 // POST /
 // Creates a new menu item, related to the menu with the supplied menu ID, with the information from the menuItem property of the request body and saves it to the database. Returns a 201 response with the newly-created menu item on the menuItem property of the response body

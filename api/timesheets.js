@@ -21,6 +21,16 @@ timesheetsRouter.param('timesheetId', (req, res, next, timesheetId) => {
 
 // GET / Returns a 200 response containing all saved timesheets related to the employee with the supplied employee ID on the timesheets property of the response body
 // If an employee with the supplied employee ID doesn’t exist, returns a 404 response
+timesheetsRouter.get('/', (req, res, next) => {
+  const sql = `SELECT * FROM Timesheet WHERE Timesheet.employee_id = ${req.params.employeeId}`;
+  db.all(sql, (error, timesheets) => {
+    if (error) {
+      next(error);
+    } else {
+      res.status(200).json({ timesheets: timesheets });
+    }
+  });
+});
 
 // POST / Creates a new timesheet, related to the employee with the supplied employee ID, with the information from the timesheet property of the request body and saves it to the database. Returns a 201 response with the newly-created timesheet on the timesheet property of the response body
 // If an employee with the supplied employee ID doesn’t exist, returns a 404 response
