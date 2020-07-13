@@ -78,8 +78,58 @@ employeesRouter.get('/:employeeId', (req, res, next) => {
 // PUT /:employeeId Updates the employee with the specified employee ID using the information from the employee property of the request body and saves it to the database. Returns a 200 response with the updated employee on the employee property of the response body
 // If any required fields are missing, returns a 400 response
 // If an employee with the supplied employee ID doesn’t exist, returns a 404 response
+employeesRouter.put('/:employeeId', (req, res, next) => {
+  const name = req.body.employee.name;
+  const position = req.body.employee.position;
+  const wage = req.body.employee.wage;
+  const isCurrentEmployee = req.body.employee.isCurrentEmployee === 0 ? 0 : 1;
+  if (!name || !position || !wage) {
+    return res.sendStatus(400);
+  }
+  db.run(
+    `UPDATE Employee SET name = $name, position = $position, wage = $wage, is_current_employee = $isCurrentEmployee WHERE Employee.id = $employeeId`,
+    {
+      $name: name,
+      $position: position,
+      $wage: wage,
+      $isCurrentEmployee: isCurrentEmployee,
+      $employeeId: req.params.employeeId,
+    },
+    (error) => {
+      if (error) {
+        next(error);
+      } else {
+        db.get(
+          `SELECT * FROM Employee WHERE Employee.id = ${req.params.employeeId}`,
+          (error, employee) => {
+            res.status(200).json({ employee: employee });
+          }
+        );
+      }
+    }
+  );
+});
 
 // DELETE /:employeeId Updates the employee with the specified employee ID to be unemployed (is_current_employee equal to 0). Returns a 200 response.
 // If an employee with the supplied employee ID doesn’t exist, returns a 404 response
+employeesRouter.delete('/:employeeId', (req, res, next) => {
+  const employeeId = req.params.employeeId;
+  db.run(
+    `UPDATE Employee SET is_current_employee = 0 WHERE Employee.id = $employeeId`,
+    { $employeeId: employeeId },
+    (error) => {
+      if (error) {
+        next(error);
+      } else {
+        db.get(
+          `SELECT * FROM Employee WHERE Employee.id = ${req.params.employeeId}`,
+          (error, employee) => {
+            res.status(200).json({ employee: employee });
+          }
+        );
+      }
+    }
+  );
+});
 
 module.exports = employeesRouter;
